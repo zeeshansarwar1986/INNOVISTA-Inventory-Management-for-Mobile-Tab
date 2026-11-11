@@ -67,6 +67,8 @@ The APK itself is **not** included: it must be built with the Android toolchain 
 | More > Reset center | Reset one date, one month, or the entire app (type RESET). Settings and password are kept on full reset. |
 | Admin panel | App lock + password, shop name, card titles and visibility, low / near-low thresholds, CSV product import with demo file, reports (CSV and A4 / Legal print files), full Excel workbook, JSON backup and restore. |
 
+Large catalogs (200+ products): Inventory has a search box and edits happen in place (no scroll jump); the bill "Add item" dialog has a searchable product list.
+
 Business rules worth knowing:
 - Stock only changes through: product creation, "+" stock, editing a stock cell, a bill, bill edit or delete, CSV import, Close day (fresh), Reset.
 - Editing or deleting a bill of a past (closed) date changes **today's** stock, not that day's stored closing snapshot.

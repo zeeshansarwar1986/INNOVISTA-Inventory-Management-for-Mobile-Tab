@@ -297,7 +297,9 @@ function admin1(){
 
 // ---------- auto-save, refresh, pull to refresh ----------
 function fixCfg(){const c=S.cfg.cards;if(!c.value)c.value='Total stock value'}
-{const d0=draw;draw=function(){fixCfg();d0();saveUI()}}
+let lastKey='';
+{const d0=draw;draw=function(){fixCfg();const k=tab+'|'+sub,keep=k==lastKey,ys=keep?[...document.querySelectorAll('.sh')].map(e=>[e.scrollLeft,e.scrollTop]):[],wy=keep?scrollY:0;
+ d0();lastKey=k;if(keep){document.querySelectorAll('.sh').forEach((e,i)=>{if(ys[i]){e.scrollLeft=ys[i][0];e.scrollTop=ys[i][1]}});scrollTo(0,wy)}saveUI()}}
 const secH=(t,k)=>'<div class="ttl"><span>'+t+'</span><button class="arr'+(S.cfg[k]?' c':'')+'" onclick="toggS(this,\''+k+'\')" aria-label="Show or hide table">▲</button></div>';
 function toggS(b,k){S.cfg[k]=!S.cfg[k];save();b.classList.toggle('c',!!S.cfg[k]);b.parentElement.nextElementSibling.classList.toggle('c',!!S.cfg[k])}
 function togg(b){S.cfg.fold=!S.cfg.fold;save();const f=document.querySelector('.fold');if(f)f.classList.toggle('c',!!S.cfg.fold);b.classList.toggle('c',!!S.cfg.fold)}
@@ -367,6 +369,25 @@ function editPay(id){const y=S.pays.find(x=>x.id==id);if(!y)return;
  '<div style="display:flex;gap:8px"><button class="btn r" onclick="delPay(\''+id+'\')">Delete</button><button class="btn s w" onclick="close()">Cancel</button><button class="btn w" id="sv">Save</button></div>');
  $('#sv').onclick=()=>{const a=+$('#pa').value;if(!(a>0))return alert('Enter an amount');y.amt=a;y.date=$('#pd').value||y.date;save();close();draw()}}
 function delPay(id){sure('Delete this payment?','The received amount will be removed and the balance will go up again.',()=>{S.pays=S.pays.filter(x=>x.id!=id);save();draw()})}
+
+// ---------- inventory search, in-place edits, searchable product picker ----------
+let invQ='',pickId=null;
+function invSheet(){const q=invQ.trim().toLowerCase(),L=S.products.filter(p=>!q||p.name.toLowerCase().includes(q));let tv=0,tq=0;S.products.forEach(p=>{tv+=p.price*p.stock;tq+=p.stock});
+ const rows=L.map(p=>[esc(p.name),'<input type="number" value="'+p.price+'" onchange="setP(\''+p.id+'\',this.value,this)">','<input type="number" value="'+p.stock+'" onchange="setS(\''+p.id+'\',this.value,this)">','<span id="v_'+p.id+'">'+M(p.price*p.stock)+'</span>','<button class="btn s" style="padding:3px 8px" onclick="addStock(\''+p.id+'\')">+</button>']);
+ return '<div class="mu" style="margin:0 0 6px">Showing '+L.length+' of '+S.products.length+' products</div>'+sheet(['Product','Price','Stock','Value','Add'],rows,['Total (all)','','<span id="ftq">'+tq+'</span>','<span id="ftv">'+M(tv)+'</span>',''],['l','r','r','r','r'])}
+function inv(){return '<div class="tg"><h2>Inventory sheet</h2><button class="btn" onclick="addProd()">+ Product</button></div><input type="search" id="invq" placeholder="Search product..." autocomplete="off" value="'+esc(invQ)+'" oninput="invQ=this.value;$(\'#invbox\').innerHTML=invSheet()"><p class="mu" style="margin-top:0">Tap a price or stock cell to edit it, like in Excel. The + button adds received stock.</p><div id="invbox">'+invSheet()+'</div>'}
+function recalcInv(id){const p=S.products.find(x=>x.id==id),e=document.getElementById('v_'+id);if(e&&p)e.textContent=M(p.price*p.stock);let tv=0,tq=0;S.products.forEach(x=>{tv+=x.price*x.stock;tq+=x.stock});const a=document.getElementById('ftq'),b=document.getElementById('ftv');if(a)a.textContent=tq;if(b)b.textContent=M(tv)}
+function setP(id,v,el){const p=S.products.find(x=>x.id==id);p.price=Math.max(0,+v||0);if(el)el.value=p.price;save();recalcInv(id)}
+function setS(id,v,el){const p=S.products.find(x=>x.id==id);p.stock=Math.max(0,+v||0);if(el)el.value=p.stock;save();recalcInv(id)}
+function pickMatches(){const q=(($('#ps')||{}).value||'').trim().toLowerCase();return S.products.filter(p=>!q||p.name.toLowerCase().includes(q))}
+function pickList(){const L=pickMatches(),sh=L.slice(0,60);
+ $('#pl').innerHTML=sh.map(p=>'<div class="row" style="padding:10px;cursor:pointer;'+(p.id==pickId?'background:var(--xl2);':'')+(p.stock<=0?'opacity:.5;':'')+'" onclick="pickSel(\''+p.id+'\')"><span>'+esc(p.name)+'</span><span class="mu">'+M(p.price)+' | stock '+p.stock+'</span></div>').join('')+(L.length>60?'<div class="mu" style="padding:8px">'+(L.length-60)+' more, type to narrow down</div>':'')+(L.length?'':'<div class="mu" style="padding:10px">No match</div>')}
+function pickSel(id){pickId=id;pickList();$('#pc').innerHTML='Selected: <b style="color:var(--tx)">'+esc(pname(id))+'</b>';const q=$('#pq');q.focus();q.select()}
+function pickAdd(){const p=S.products.find(x=>x.id==pickId);if(!p)return alert('Select a product from the list');const q=+$('#pq').value,used=bill.items.filter(i=>i.pid==p.id).reduce((a,i)=>a+i.qty,0);
+ if(!(q>0)||q+used>p.stock)return alert('Not enough stock for '+p.name+' (available '+(p.stock-used)+')');bill.items.push({pid:p.id,qty:q,price:p.price});close();draw()}
+function addItem(){if(!S.products.length)return form('No products',[],()=>true,'OK');pickId=null;
+ modal('<h2>Add item</h2><input id="ps" type="search" placeholder="Search product name..." autocomplete="off" oninput="pickList()" onkeydown="if(event.key==\'Enter\'){const L=pickMatches();if(L.length)pickSel(L[0].id)}"><div id="pl" style="max-height:38vh;overflow:auto;border:1px solid var(--bd);border-radius:10px"></div><div id="pc" class="mu" style="margin:8px 0">No product selected</div><label class="mu">Quantity</label><input id="pq" type="number" min="1" value="1"><div style="display:flex;gap:8px"><button class="btn s w" onclick="close()">Cancel</button><button class="btn w" id="pa">Add</button></div>');
+ pickList();$('#pa').onclick=pickAdd;setTimeout(()=>{const e=$('#ps');if(e)e.focus()},60)}
 (window.DBX?DBX.boot().then(function(st){if(st&&(!S.savedAt||(st.savedAt||'')>=S.savedAt)){S=st;vd=S.cur;unlocked=!S.cfg.lock;fixCfg()}else DBX.queue(S)}).catch(function(e){console.error(e)}):Promise.resolve()).then(function(){draw()});
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(function(){});
 </script></body></html>
