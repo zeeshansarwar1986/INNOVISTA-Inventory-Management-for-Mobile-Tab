@@ -1,0 +1,19 @@
+{
+  "name": "innovista-inventory",
+  "version": "1.0.0",
+  "description": "INNOVISTA Inventory Management by Zeeshan Sarwar",
+  "private": true,
+  "scripts": {
+    "vendor": "node -e \"require('fs').mkdirSync('www/vendor',{recursive:true});require('fs').copyFileSync('node_modules/xlsx/dist/xlsx.full.min.js','www/vendor/xlsx.full.min.js')\"",
+    "serve": "npx http-server www -p 8080 -c-1",
+    "android:add": "npx cap add android",
+    "android:sync": "npm run vendor && npx cap sync android",
+    "android:open": "npx cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.2.0",
+    "@capacitor/cli": "^6.2.0",
+    "@capacitor/core": "^6.2.0",
+    "xlsx": "0.18.5"
+  }
+}

@@ -1,0 +1,258 @@
+{
+ "cur": "2026-11-07",
+ "products": [
+  {
+   "id": "p1",
+   "name": "Basmati Rice 5kg",
+   "price": 1450,
+   "stock": 120
+  },
+  {
+   "id": "p2",
+   "name": "Cooking Oil 5L",
+   "price": 2300,
+   "stock": 40
+  },
+  {
+   "id": "p3",
+   "name": "Sugar 1kg",
+   "price": 165,
+   "stock": 15
+  },
+  {
+   "id": "p4",
+   "name": "Tea 190g",
+   "price": 520,
+   "stock": 8
+  },
+  {
+   "id": "p5",
+   "name": "Flour 10kg",
+   "price": 1100,
+   "stock": 60
+  },
+  {
+   "id": "p6",
+   "name": "Salt 800g",
+   "price": 60,
+   "stock": 200
+  }
+ ],
+ "customers": [
+  {
+   "id": "c1",
+   "name": "Ali Traders",
+   "phone": "0300-1112233"
+  },
+  {
+   "id": "c2",
+   "name": "Bilal General Store",
+   "phone": "0321-4445566"
+  },
+  {
+   "id": "c3",
+   "name": "Chenab Mart",
+   "phone": "0333-7778899"
+  },
+  {
+   "id": "c4",
+   "name": "Hamza Store",
+   "phone": "0345-1239870"
+  }
+ ],
+ "sales": [
+  {
+   "id": "s1",
+   "date": "2026-11-05",
+   "cust": "c1",
+   "items": [
+    {
+     "pid": "p1",
+     "qty": 10,
+     "price": 1450
+    },
+    {
+     "pid": "p5",
+     "qty": 5,
+     "price": 1100
+    }
+   ],
+   "total": 20000,
+   "paid": 10000
+  },
+  {
+   "id": "s2",
+   "date": "2026-11-05",
+   "cust": "c2",
+   "items": [
+    {
+     "pid": "p2",
+     "qty": 4,
+     "price": 2300
+    },
+    {
+     "pid": "p3",
+     "qty": 20,
+     "price": 165
+    }
+   ],
+   "total": 12500,
+   "paid": 5000
+  },
+  {
+   "id": "s3",
+   "date": "2026-11-06",
+   "cust": "c3",
+   "items": [
+    {
+     "pid": "p1",
+     "qty": 8,
+     "price": 1450
+    },
+    {
+     "pid": "p6",
+     "qty": 30,
+     "price": 60
+    }
+   ],
+   "total": 13400,
+   "paid": 8000
+  },
+  {
+   "id": "s4",
+   "date": "2026-11-06",
+   "cust": "c1",
+   "items": [
+    {
+     "pid": "p2",
+     "qty": 6,
+     "price": 2300
+    }
+   ],
+   "total": 13800,
+   "paid": 6000
+  },
+  {
+   "id": "s5",
+   "date": "2026-11-07",
+   "cust": "c2",
+   "items": [
+    {
+     "pid": "p1",
+     "qty": 12,
+     "price": 1450
+    },
+    {
+     "pid": "p4",
+     "qty": 5,
+     "price": 520
+    },
+    {
+     "pid": "p3",
+     "qty": 10,
+     "price": 165
+    }
+   ],
+   "total": 21650,
+   "paid": 12000
+  },
+  {
+   "id": "s6",
+   "date": "2026-11-07",
+   "cust": "c4",
+   "items": [
+    {
+     "pid": "p5",
+     "qty": 9,
+     "price": 1100
+    },
+    {
+     "pid": "p2",
+     "qty": 3,
+     "price": 2300
+    }
+   ],
+   "total": 16800,
+   "paid": 5000
+  },
+  {
+   "id": "s7",
+   "date": "2026-11-07",
+   "cust": "c1",
+   "items": [
+    {
+     "pid": "p6",
+     "qty": 40,
+     "price": 60
+    },
+    {
+     "pid": "p3",
+     "qty": 6,
+     "price": 165
+    }
+   ],
+   "total": 3390,
+   "paid": 2000
+  }
+ ],
+ "pays": [
+  {
+   "id": "y1",
+   "date": "2026-11-06",
+   "cust": "c2",
+   "amt": 3000
+  },
+  {
+   "id": "y2",
+   "date": "2026-11-07",
+   "cust": "c1",
+   "amt": 4000
+  },
+  {
+   "id": "y3",
+   "date": "2026-11-07",
+   "cust": "c3",
+   "amt": 2500
+  }
+ ],
+ "days": {
+  "2026-11-05": {
+   "closing": {
+    "p1": 140,
+    "p2": 48,
+    "p3": 50,
+    "p4": 20,
+    "p5": 75,
+    "p6": 260
+   },
+   "closed": true
+  },
+  "2026-11-06": {
+   "closing": {
+    "p1": 132,
+    "p2": 42,
+    "p3": 30,
+    "p4": 13,
+    "p5": 69,
+    "p6": 230
+   },
+   "closed": true
+  }
+ },
+ "cfg": {
+  "lock": false,
+  "pw": "1234",
+  "shop": "INNOVISTA",
+  "note": "Inventory Management",
+  "low": 10,
+  "near": 30,
+  "cards": {
+   "sales": "Total sales",
+   "units": "Units sold",
+   "stock": "Stock remaining",
+   "recv": "Payments received",
+   "due": "Total outstanding"
+  },
+  "hide": {}
+ }
+}
