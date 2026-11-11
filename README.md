@@ -36,7 +36,11 @@ Innovista Ap/
     sw.js                  service worker (offline cache)
     icons/                 192 and 512 px icons from the INNOVISTA logo
     vendor/                created by `npm run vendor` (offline copy of SheetJS)
+  db/schema.sql            SQLite schema (tables, indexes, views)
+  docs/DATABASE.md         database design, sync flow, migration and next steps
+  www/db.js                SQLite adapter (native app only)
   data/
+    innovista-demo.db      demo SQLite database (open with DB Browser for SQLite)
     sample-backup.json     demo data: Admin panel > Restore from a backup file
     products-demo.csv      demo product import file
   docs/screenshots/        phone and tablet screenshots
@@ -92,6 +96,10 @@ Known Android caveats:
 - File downloads (xlsx, csv, print files) use a browser-style download. In the Capacitor WebView this may not save files. Fix: add `@capacitor/filesystem` and `@capacitor/share`, and replace `blobDL()` in `www/index.html` to write the file and open the share sheet.
 - Data lives in WebView `localStorage`. Android can clear it if the user clears app storage or uninstalls. Weekly backup is advised until the data layer moves to SQLite (see roadmap).
 - The Excel export loads SheetJS from `www/vendor/` (created by `npm run vendor`) and falls back to the cdnjs CDN.
+
+## 4b. Database (SQLite)
+
+In the Android app the data is stored in a SQLite database (`www/db.js`, schema in `db/schema.sql`). In a browser or PWA the app keeps using localStorage. A localStorage copy is always kept as a second safety copy. Full details, table list, sync flow and the migration plan are in `docs/DATABASE.md`.
 
 ## 5. Screen sizes
 

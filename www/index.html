@@ -67,6 +67,7 @@ table.sheet tbody tr:hover td:not(.rn){background:#e8502e14!important}
 table.sheet tr.ft td{position:sticky;bottom:0;z-index:2}
 table.sheet input:focus{outline:2px solid var(--pr);outline-offset:0}
 .ttl .arr{margin-left:auto;width:32px;height:32px}.ttl span{flex:1}</style></head><body>
+<script src="db.js"></script>
 <div id="ptr"></div><div id="toast"></div><div id="app"></div><nav id="nav"></nav><div id="modal"><div class="box" id="mb"></div></div>
 <script>
 // INNOVISTA Inventory Management - created by Zeeshan Sarwar
@@ -80,7 +81,7 @@ const def=()=>({cur:iso(new Date()),products:[],customers:[],sales:[],pays:[],da
  cfg:{lock:false,pw:'1234',shop:'INNOVISTA',note:'Inventory Management',low:10,near:30,
  cards:{sales:'Total sales',units:'Units sold',stock:'Stock remaining',recv:'Payments received',due:'Total outstanding'},hide:{}}});
 let S;S=null;for(const k of [K,K+'_bak']){try{const j=JSON.parse(localStorage.getItem(k));if(j&&j.products&&j.cfg){S=j;break}}catch(e){}}if(!S)S=def();
-let lastSave=null;const save=()=>{try{const j=JSON.stringify(S);localStorage.setItem(K,j);localStorage.setItem(K+'_bak',j);lastSave=new Date();saveUI()}catch(e){}};
+let lastSave=null;const save=()=>{try{const j=JSON.stringify(S);localStorage.setItem(K,j);localStorage.setItem(K+'_bak',j);S.savedAt=new Date().toISOString();lastSave=new Date();saveUI();if(window.DBX)DBX.queue(S)}catch(e){}};
 const saveUI=()=>{try{localStorage.setItem(K+'_ui',JSON.stringify({tab,vd,sub,bill}))}catch(e){}};
 let tab='dash',vd=S.cur,unlocked=!S.cfg.lock,sub=null,bill=null;
 try{const u=JSON.parse(localStorage.getItem(K+'_ui'));if(u){if(['dash','inv','sales','cust','more'].includes(u.tab))tab=u.tab;if(/^\d{4}-\d\d-\d\d$/.test(u.vd||''))vd=u.vd;if(u.sub=='admin'||S.customers.some(c=>c.id==u.sub))sub=u.sub;if(u.bill&&u.bill.items)bill=u.bill}}catch(e){}
@@ -335,7 +336,7 @@ function exportJSON(){dlBin('innovista-backup-'+iso(new Date())+'.json',JSON.str
 function restoreFile(el){const f=el.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{let j;try{j=JSON.parse(r.result)}catch(e){return alert('Not a valid backup file')}
  if(!j||!j.products||!j.sales||!j.cfg)return alert('Not an INNOVISTA backup file');
  sure('Restore backup','All current data on this device will be replaced by the backup ('+j.products.length+' products, '+j.sales.length+' bills).',()=>{S=j;vd=S.cur;bill=null;save();draw()})};r.readAsText(f);el.value=''}
-function admin(){return admin1()+'<div class="card"><h2>Data safety, Excel and Google Sheets</h2><p class="mu">Every entry is saved automatically on this device and survives closing the app, a crash or a restart. Last saved: <b style="color:var(--tx)">'+(lastSave?lastSave.toLocaleTimeString():'no change in this session')+'</b></p>'+
+function admin(){return admin1()+'<div class="card"><h2>Data safety, Excel and Google Sheets</h2><p class="mu">Storage: <b style="color:var(--tx)">'+(window.DBX?(DBX.ok===false?'SQLite (error, browser copy kept)':'SQLite database'):'browser storage')+'</b>. Every entry is saved automatically on this device and survives closing the app, a crash or a restart. Last saved: <b style="color:var(--tx)">'+(lastSave?lastSave.toLocaleTimeString():'no change in this session')+'</b></p>'+
  '<button class="btn w" onclick="exportXLSX()">Download full Excel workbook (.xlsx)</button><p class="mu">Sheets: Daily Summary, Daily Stock (sold and remaining per date), Daily Sales, Shopkeepers, Ledger, Payments, Products.</p>'+
  '<button class="btn s w" onclick="exportJSON()">Download backup file</button><br><br><label class="mu">Restore from a backup file</label><input type="file" accept=".json,application/json" onchange="restoreFile(this)">'+
  '<div class="tile" style="cursor:default"><div class="ic">📗</div><div><b>Google Sheets</b><span class="mu">Open Google Sheets, File, Import, Upload, and choose the Excel workbook. Live automatic sync is not possible from this hosted page; it needs a backend server.</span></div></div></div>'}
@@ -366,6 +367,6 @@ function editPay(id){const y=S.pays.find(x=>x.id==id);if(!y)return;
  '<div style="display:flex;gap:8px"><button class="btn r" onclick="delPay(\''+id+'\')">Delete</button><button class="btn s w" onclick="close()">Cancel</button><button class="btn w" id="sv">Save</button></div>');
  $('#sv').onclick=()=>{const a=+$('#pa').value;if(!(a>0))return alert('Enter an amount');y.amt=a;y.date=$('#pd').value||y.date;save();close();draw()}}
 function delPay(id){sure('Delete this payment?','The received amount will be removed and the balance will go up again.',()=>{S.pays=S.pays.filter(x=>x.id!=id);save();draw()})}
-draw();
+(window.DBX?DBX.boot().then(function(st){if(st&&(!S.savedAt||(st.savedAt||'')>=S.savedAt)){S=st;vd=S.cur;unlocked=!S.cfg.lock;fixCfg()}else DBX.queue(S)}).catch(function(e){console.error(e)}):Promise.resolve()).then(function(){draw()});
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(function(){});
 </script></body></html>
