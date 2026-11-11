@@ -66,7 +66,7 @@ table.sheet tr.ab th:first-child,table.sheet tr.hd th.rn{z-index:4}
 table.sheet tbody tr:hover td:not(.rn){background:#e8502e14!important}
 table.sheet tr.ft td{position:sticky;bottom:0;z-index:2}
 table.sheet input:focus{outline:2px solid var(--pr);outline-offset:0}
-.ttl .arr{margin-left:auto;width:32px;height:32px}.ttl span{flex:1}</style></head><body>
+.ttl .arr{margin-left:auto;width:32px;height:32px}.ttl span{flex:1}.chip{border:1px solid var(--bd);background:var(--card);border-radius:99px;padding:6px 13px;font-size:13px;cursor:pointer}.chip.on{background:var(--pr);color:#fff;border-color:var(--pr)}@media(max-width:699px){#cbox table.sheet td,#cbox table.sheet th{padding:7px 5px;font-size:12.5px}#cbox table.sheet td:nth-child(2){white-space:normal;min-width:84px}}</style></head><body>
 <script src="db.js"></script>
 <div id="ptr"></div><div id="toast"></div><div id="app"></div><nav id="nav"></nav><div id="modal"><div class="box" id="mb"></div></div>
 <script>
@@ -388,6 +388,37 @@ function pickAdd(){const p=S.products.find(x=>x.id==pickId);if(!p)return alert('
 function addItem(){if(!S.products.length)return form('No products',[],()=>true,'OK');pickId=null;
  modal('<h2>Add item</h2><input id="ps" type="search" placeholder="Search product name..." autocomplete="off" oninput="pickList()" onkeydown="if(event.key==\'Enter\'){const L=pickMatches();if(L.length)pickSel(L[0].id)}"><div id="pl" style="max-height:38vh;overflow:auto;border:1px solid var(--bd);border-radius:10px"></div><div id="pc" class="mu" style="margin:8px 0">No product selected</div><label class="mu">Quantity</label><input id="pq" type="number" min="1" value="1"><div style="display:flex;gap:8px"><button class="btn s w" onclick="close()">Cancel</button><button class="btn w" id="pa">Add</button></div>');
  pickList();$('#pa').onclick=pickAdd;setTimeout(()=>{const e=$('#ps');if(e)e.focus()},60)}
+
+// ---------- smart shopkeeper ledger ----------
+let custQ='',custSort='due',custDue=false;
+function custStats(c){const bs=billsOf(c.id),ps=paysOf(c.id),billed=bs.reduce((a,x)=>a+x.total,0),paid=bs.reduce((a,x)=>a+x.paid,0)+ps.reduce((a,x)=>a+x.amt,0);return{billed,paid,due:billed-paid,n:bs.length}}
+function custSheet(){const q=custQ.trim().toLowerCase();
+ let L=S.customers.map(c=>({c,s:custStats(c)})).filter(o=>(!q||o.c.name.toLowerCase().includes(q)||(o.c.phone||'').includes(q))&&(!custDue||o.s.due>0));
+ L.sort(custSort=='az'?(a,b)=>a.c.name.localeCompare(b.c.name):(a,b)=>b.s.due-a.s.due);
+ let td=0,tb=0;S.customers.forEach(c=>{const x=custStats(c);td+=x.due;tb+=x.billed});
+ const rows=L.map(o=>['<a style="color:var(--pr);cursor:pointer;font-weight:600" onclick="sub=\''+o.c.id+'\';draw()">'+esc(o.c.name)+'</a>',o.c.phone?'<a href="tel:'+esc(o.c.phone)+'" style="color:inherit;text-decoration:none">'+esc(o.c.phone)+'</a>':'<span class="mu">-</span>','<b class="'+(o.s.due>0?'bad':'ok')+'">'+M(o.s.due)+'</b>',M(o.s.billed)]);
+ return '<div class="mu" style="margin:0 0 6px">Showing '+L.length+' of '+S.customers.length+' shopkeepers. Tap a name to open the full account.</div>'+sheet(['Shopkeeper','Phone','Due','Sale'],rows,['Total (all)','',M(td),M(tb)],['l','l','r','r'])}
+function editCust(id){const c=S.customers.find(x=>x.id==id);form('Edit shopkeeper',[['n','Name','text',c.name],['ph','Phone','tel',c.phone||'']],v=>{if(!v.n.trim())return false;c.name=v.n.trim();c.phone=v.ph.trim();save();draw()})}
+function newBillFor(id){bill={cust:id,items:[],paid:''};sub=null;tab='sales';draw()}
+function custs(){
+ if(!sub){const dueN=S.customers.filter(c=>custStats(c).due>0).length,td=S.customers.reduce((a,c)=>a+custStats(c).due,0);
+  const chip=(t,on,f)=>'<button class="chip'+(on?' on':'')+'" onclick="'+f+';draw()">'+t+'</button>';
+  return '<div class="tg"><h2>Shopkeeper ledger</h2><button class="btn" onclick="addCust()">+ Add</button></div>'+
+  '<div class="grid"><div class="card hero"><div class="mu">Total due from shopkeepers</div><div class="big">'+M(td)+'</div><div class="mu">'+dueN+' with balance</div></div><div class="card"><div class="mu">Shopkeepers</div><div class="big">'+S.customers.length+'</div><div class="mu">in the ledger</div></div></div>'+
+  '<input type="search" id="cq" placeholder="Search name or phone..." autocomplete="off" value="'+esc(custQ)+'" oninput="custQ=this.value;$(\'#cbox\').innerHTML=custSheet()">'+
+  '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">'+chip('Highest due',custSort=='due',"custSort='due'")+chip('A to Z',custSort=='az',"custSort='az'")+chip('With due only',custDue,'custDue=!custDue')+'</div><div id="cbox">'+custSheet()+'</div>'}
+ const c=S.customers.find(x=>x.id==sub);if(!c){sub=null;return custs()}
+ const ev=[...billsOf(sub).map(x=>({k:'b',id:x.id,d:x.date,t:x.items.map(i=>pname(i.pid)+' x'+i.qty).join(', '),a:x.total,p:x.paid})),...paysOf(sub).map(x=>({k:'p',id:x.id,d:x.date,t:'Payment received',a:0,p:x.amt}))].sort((a,b)=>a.d>b.d?1:-1);
+ let run=0,ta=0,tp=0;const tx=ev.map(e=>{run+=e.a-e.p;ta+=e.a;tp+=e.p;return[e.d,esc(e.t),e.a?M(e.a):'',e.p?M(e.p):'',M(run),'<button class="btn s" style="padding:3px 9px" onclick="'+(e.k=='b'?'editBill':'editPay')+'(\''+e.id+'\')">Edit</button>']}).reverse();
+ const byD={};ev.forEach(e=>{const o=byD[e.d]=byD[e.d]||{b:0,s:0,p:0};if(e.k=='b')o.b++;o.s+=e.a;o.p+=e.p});
+ let r2=0,nb=0;const dw=Object.keys(byD).sort().map(d=>{const o=byD[d];r2+=o.s-o.p;nb+=o.b;return[d,o.b||'',o.s?M(o.s):'',o.p?M(o.p):'','<b class="'+(r2>0?'bad':'ok')+'">'+M(r2)+'</b>']}).reverse();
+ const last=ev.length?ev[ev.length-1].d:'-';
+ return '<div style="display:flex;gap:8px;margin-bottom:10px"><button class="btn s" onclick="sub=null;draw()">Back</button><button class="btn s" onclick="editCust(\''+sub+'\')">Edit name or phone</button></div>'+
+ '<div class="card hero"><div class="mu">'+esc(c.name)+(c.phone?' | <a href="tel:'+esc(c.phone)+'" style="color:#fff">'+esc(c.phone)+'</a>':'')+'</div><div class="big">Balance due '+M(ta-tp)+'</div></div>'+
+ '<div class="grid"><div class="card"><div class="mu">Total sale</div><div class="big">'+M(ta)+'</div></div><div class="card"><div class="mu">Total received</div><div class="big ok">'+M(tp)+'</div></div><div class="card"><div class="mu">Bills</div><div class="big">'+nb+'</div></div><div class="card"><div class="mu">Last entry</div><div class="big" style="font-size:17px">'+last+'</div></div></div>'+
+ '<div style="display:flex;gap:8px;margin-bottom:12px"><button class="btn w" onclick="recv(\''+sub+'\')">Receive payment</button><button class="btn s w" onclick="newBillFor(\''+sub+'\')">New bill</button></div>'+
+ secH('Date-wise account','foldLedDate')+'<div class="fold'+(S.cfg.foldLedDate?' c':'')+'"><div>'+sheet(['Date','Bills','Sale','Received','Balance'],dw,['Total',nb,M(ta),M(tp),M(ta-tp)],['l','r','r','r','r'])+'</div></div>'+
+ secH('All entries (tap Edit to change)','foldLedTx')+'<div class="fold'+(S.cfg.foldLedTx?' c':'')+'"><div>'+sheet(['Date','Details','Bill','Paid','Balance',''],tx,['Total','',M(ta),M(tp),M(ta-tp),''],['l','l','r','r','r','l'])+'</div></div>'}
 (window.DBX?DBX.boot().then(function(st){if(st&&(!S.savedAt||(st.savedAt||'')>=S.savedAt)){S=st;vd=S.cur;unlocked=!S.cfg.lock;fixCfg()}else DBX.queue(S)}).catch(function(e){console.error(e)}):Promise.resolve()).then(function(){draw()});
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(function(){});
 </script></body></html>
