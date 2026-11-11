@@ -66,7 +66,7 @@ table.sheet tr.ab th:first-child,table.sheet tr.hd th.rn{z-index:4}
 table.sheet tbody tr:hover td:not(.rn){background:#e8502e14!important}
 table.sheet tr.ft td{position:sticky;bottom:0;z-index:2}
 table.sheet input:focus{outline:2px solid var(--pr);outline-offset:0}
-</style></head><body>
+.ttl .arr{margin-left:auto;width:32px;height:32px}.ttl span{flex:1}</style></head><body>
 <div id="ptr"></div><div id="toast"></div><div id="app"></div><nav id="nav"></nav><div id="modal"><div class="box" id="mb"></div></div>
 <script>
 // INNOVISTA Inventory Management - created by Zeeshan Sarwar
@@ -202,8 +202,8 @@ function dash(){
  '<div class="fold'+(S.cfg.fold?' c':'')+'"><div><div class="grid">'+cards.map((x,i)=>'<div class="card '+(i==0?'hero':'')+'"><div class="mu">'+esc(c[x[0]])+'</div><div class="big">'+x[1]+'</div><div class="mu">'+x[2]+'</div></div>').join('')+'</div>'+
  (h.stockinfo?'':'<div class="card"><h2>Stock info</h2><div class="mu">Active products</div><div class="big">'+S.products.length+'</div><div class="bars">'+
  [['High stock',hi,'#6e86ec'],['Near-low',nl,'#7fd3ee'],['Low stock',lo,'#b682d8']].map(b=>'<div>'+b[0]+'<br><b style="color:var(--tx);font-size:18px">'+b[1]+'</b><i style="height:'+(10+b[1]/mx*60)+'px;background:'+b[2]+'"></i></div>').join('')+'</div></div>')+'</div></div>'+
- '<div class="ttl">Daily stock sheet</div>'+(D.rem?sheet(['Product','Price','Sold','Left','Amount'],prow,['Total','',ps,pl,M(pa)],['l','r','r','r','r']):'<div class="card mu">No stock record for this date</div>')+
- '<div class="ttl">Daily sales sheet</div>'+sheet(['Shopkeeper','Items','Bill','Paid','Due'],brow,['Total','',M(bt),M(bp),M(bt-bp)],['l','l','r','r','r'])}
+ secH('Daily stock sheet','foldStock')+'<div class="fold'+(S.cfg.foldStock?' c':'')+'"><div>'+(D.rem?sheet(['Product','Price','Sold','Left','Amount'],prow,['Total','',ps,pl,M(pa)],['l','r','r','r','r']):'<div class="card mu">No stock record for this date</div>')+'</div></div>'+
+ secH('Daily sales sheet','foldSales')+'<div class="fold'+(S.cfg.foldSales?' c':'')+'"><div>'+sheet(['Shopkeeper','Items','Bill','Paid','Due'],brow,['Total','',M(bt),M(bp),M(bt-bp)],['l','l','r','r','r'])+'</div></div>'}
 function inv(){
  let tv=0,tq=0;
  const rows=S.products.map(p=>{tv+=p.price*p.stock;tq+=p.stock;return[esc(p.name),'<input type="number" value="'+p.price+'" onchange="setP(\''+p.id+'\',this.value)">','<input type="number" value="'+p.stock+'" onchange="setS(\''+p.id+'\',this.value)">',M(p.price*p.stock),'<button class="btn s" style="padding:3px 8px" onclick="addStock(\''+p.id+'\')">+</button>']});
@@ -297,6 +297,8 @@ function admin1(){
 // ---------- auto-save, refresh, pull to refresh ----------
 function fixCfg(){const c=S.cfg.cards;if(!c.value)c.value='Total stock value'}
 {const d0=draw;draw=function(){fixCfg();d0();saveUI()}}
+const secH=(t,k)=>'<div class="ttl"><span>'+t+'</span><button class="arr'+(S.cfg[k]?' c':'')+'" onclick="toggS(this,\''+k+'\')" aria-label="Show or hide table">▲</button></div>';
+function toggS(b,k){S.cfg[k]=!S.cfg[k];save();b.classList.toggle('c',!!S.cfg[k]);b.parentElement.nextElementSibling.classList.toggle('c',!!S.cfg[k])}
 function togg(b){S.cfg.fold=!S.cfg.fold;save();const f=document.querySelector('.fold');if(f)f.classList.toggle('c',!!S.cfg.fold);b.classList.toggle('c',!!S.cfg.fold)}
 function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');setTimeout(()=>e.classList.remove('on'),1800)}
 function refresh(manual){try{const j=JSON.parse(localStorage.getItem(K));if(j&&j.products&&j.cfg)S=j}catch(e){}
