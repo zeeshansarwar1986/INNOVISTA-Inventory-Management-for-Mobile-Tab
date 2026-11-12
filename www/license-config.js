@@ -1,3 +1,1 @@
-// Licensing settings. Set publicKey to the PUBLIC key shown in the INNOVISTA Key Generator (Settings > Public key).
-// Never put a private key here. See docs/LICENSING.md.
-window.LICENSE_CONFIG={required:true,publicKey:null,ownerWhatsApp:'',appName:'INNOVISTA Inventory Management'};
+window.LICENSE_CONFIG={"required":true,"publicKey":{"kty":"EC","crv":"P-256","x":"TOxlLDUvGXEoqc-jFbvtobjct9tmvRF8bZ6t20Nfa-8","y":"wnjfEoTA2eNCEIeTRIaUh0ZjO8EbOLMD9GxWVrdcfrw"},"ownerWhatsApp":"","appName":"INNOVISTA Inventory Management"};
