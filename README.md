@@ -30,7 +30,11 @@ Innovista Ap/
   capacitor.config.json    Android wrapper settings (appId com.innovista.inventory)
   build-apk.bat            one-click debug APK build on Windows
   .github/workflows/build-apk.yml   builds the APK on GitHub (no local Android setup)
+  keygen/                  INNOVISTA Key Generator (separate app for the owner phone)
+  tools/                   protect.js (obfuscation build step), set-public-key.js
+  docs/LICENSING.md        activation keys, device ID, security and limits
   www/
+    license.js, license-config.js   activation screen and key check
     index.html             THE APP (HTML + CSS + JS in one file)
     manifest.webmanifest   PWA manifest (install to home screen)
     sw.js                  service worker (offline cache)
@@ -65,7 +69,7 @@ The APK itself is **not** included: it must be built with the Android toolchain 
 | Ledger | Table of shopkeepers (name, phone, due, total sale) with search, sort and a due-only filter; tap a phone number to call. Tap a name for the full account: totals, a date-wise account and every entry. Tap a name for the full account with running balance. Edit button on every bill (quantities, paid, date, delete) and payment (amount, date, delete). Receive payment button. |
 | More > Close day | Saves the day's closing stock snapshot, moves to the next date. Choose: carry remaining stock, or start fresh (stock set to 0, then add new stock). |
 | More > Reset center | Reset one date, one month, or the entire app (type RESET). Settings and password are kept on full reset. |
-| Admin panel | App lock + password, shop name, card titles and visibility, low / near-low thresholds, CSV product import with demo file, reports (CSV and A4 / Legal print files), full Excel workbook, JSON backup and restore. |
+| Admin panel | Accordion sections for phones. Asks the app password again when opened. App lock + hashed password, shop name, card titles and visibility, low / near-low thresholds, CSV product import with demo file, reports (CSV and A4 / Legal print files), full Excel workbook, JSON backup and restore. |
 
 Large catalogs (200+ products): Inventory has a search box and edits happen in place (no scroll jump); the bill "Add item" dialog has a searchable product list.
 
@@ -98,6 +102,14 @@ Known Android caveats:
 - File downloads (xlsx, csv, print files) use a browser-style download. In the Capacitor WebView this may not save files. Fix: add `@capacitor/filesystem` and `@capacitor/share`, and replace `blobDL()` in `www/index.html` to write the file and open the share sheet.
 - Data lives in WebView `localStorage`. Android can clear it if the user clears app storage or uninstalls. Weekly backup is advised until the data layer moves to SQLite (see roadmap).
 - The Excel export loads SheetJS from `www/vendor/` (created by `npm run vendor`) and falls back to the cdnjs CDN.
+
+## 4a. Activation key and Key Generator
+
+The Inventory app asks for an activation key on its first screen and shows its Device ID (copy or WhatsApp). The owner makes the key with the separate **INNOVISTA Key Generator** app (`keygen/`). Read `docs/LICENSING.md` first: it explains the owner steps, the signing-key rule, the protection measures and the honest limits. Before building the APK put the public key from the Key Generator into `public-key.json`.
+
+| Activation screen | Key Generator | Admin panel with License |
+|---|---|---|
+| ![Activation](docs/screenshots/9-activation-screen.png) | ![Key Generator](docs/screenshots/10-key-generator.png) | ![Admin](docs/screenshots/11-admin-license.png) |
 
 ## 4b. Database (SQLite)
 

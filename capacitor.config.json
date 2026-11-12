@@ -1,1 +1,12 @@
-{"appId":"com.innovista.inventory","appName":"INNOVISTA Inventory","webDir":"www","server":{"androidScheme":"https"}}
+{
+  "appId": "com.innovista.inventory",
+  "appName": "INNOVISTA Inventory",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": false,
+    "webContentsDebuggingEnabled": false
+  }
+}

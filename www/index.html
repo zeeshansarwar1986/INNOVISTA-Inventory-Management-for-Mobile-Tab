@@ -66,7 +66,9 @@ table.sheet tr.ab th:first-child,table.sheet tr.hd th.rn{z-index:4}
 table.sheet tbody tr:hover td:not(.rn){background:#e8502e14!important}
 table.sheet tr.ft td{position:sticky;bottom:0;z-index:2}
 table.sheet input:focus{outline:2px solid var(--pr);outline-offset:0}
-.ttl .arr{margin-left:auto;width:32px;height:32px}.ttl span{flex:1}.chip{border:1px solid var(--bd);background:var(--card);border-radius:99px;padding:6px 13px;font-size:13px;cursor:pointer}.chip.on{background:var(--pr);color:#fff;border-color:var(--pr)}@media(max-width:699px){#cbox table.sheet td,#cbox table.sheet th{padding:7px 5px;font-size:12.5px}#cbox table.sheet td:nth-child(2){white-space:normal;min-width:84px}}</style></head><body>
+.ttl .arr{margin-left:auto;width:32px;height:32px}.ttl span{flex:1}.chip{border:1px solid var(--bd);background:var(--card);border-radius:99px;padding:6px 13px;font-size:13px;cursor:pointer}.chip.on{background:var(--pr);color:#fff;border-color:var(--pr)}@media(max-width:699px){#cbox table.sheet td,#cbox table.sheet th{padding:7px 5px;font-size:12.5px}#cbox table.sheet td:nth-child(2){white-space:normal;min-width:84px}}.acc{padding:12px 14px}.acc .accb{display:none;margin-top:12px}.acc.open .accb{display:block}.acch{display:flex;align-items:center;gap:12px;cursor:pointer;min-height:42px}.acch .ic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:#e8502e1f;font-size:19px;flex:none}.acch b{flex:1;font-size:15px}.acch .ch{color:var(--mu);transition:transform .2s;font-size:20px}.acc.open .ch{transform:rotate(90deg)}.acc.open{border-color:var(--pr)}.admsub{margin:-4px 0 12px}</style></head><body>
+<script src="license-config.js"></script>
+<script src="license.js"></script>
 <script src="db.js"></script>
 <div id="ptr"></div><div id="toast"></div><div id="app"></div><nav id="nav"></nav><div id="modal"><div class="box" id="mb"></div></div>
 <script>
@@ -102,7 +104,7 @@ function form(title,fields,cb,ok='Save'){
 // ---------- lock ----------
 function lockView(){
  $('#nav').innerHTML='';$('#app').innerHTML='<div class="lock card">'+logo(110)+'<h2>'+esc(S.cfg.shop)+'</h2><p class="mu">Enter password to open the app</p><input id="pw" type="password" placeholder="Password"><button class="btn w" id="go">Unlock</button><p class="bad" id="er"></p></div>';
- const go=()=>{if($('#pw').value===S.cfg.pw){unlocked=true;draw()}else $('#er').textContent='Wrong password'};
+ const go=async()=>{if(await checkPw($('#pw').value)){unlocked=true;draw()}else $('#er').textContent='Wrong password'};
  $('#go').onclick=go;$('#pw').onkeydown=e=>{if(e.key=='Enter')go()}}
 // ---------- calculations ----------
 function dayData(d){
@@ -155,12 +157,12 @@ function custs1(){
  return '<div class="tg"><h2>Shopkeepers</h2><button class="btn" onclick="addCust()">+ Add</button></div><div class="card">'+(S.customers.map(c=>'<div class="row" onclick="sub=\''+c.id+'\';draw()" style="cursor:pointer"><span>'+esc(c.name)+'</span><b class="'+(bal(c.id)>0?'bad':'ok')+'">'+M(bal(c.id))+'</b></div>').join('')||'<div class="mu">No shopkeepers yet</div>')+'</div>'}
 function recv(id){form('Receive payment',[['a','Amount','number']],v=>{if(!+v.a)return false;S.pays.push({id:uid(),date:S.cur,cust:id,amt:+v.a});save();draw()})}
 function more(){
- return '<h2>More</h2><div class="card"><div class="row" onclick="sub=\'admin\';draw()" style="cursor:pointer"><span>Admin panel</span><span>›</span></div><div class="row" onclick="closeDay()" style="cursor:pointer"><span>Close day ('+S.cur+')</span><span>›</span></div>'+
+ return '<h2>More</h2><div class="card"><div class="row" onclick="openAdmin()" style="cursor:pointer"><span>Admin panel</span><span>›</span></div><div class="row" onclick="closeDay()" style="cursor:pointer"><span>Close day ('+S.cur+')</span><span>›</span></div>'+
  (S.cfg.lock?'<div class="row" onclick="unlocked=false;draw()" style="cursor:pointer"><span>Lock app now</span><span>›</span></div>':'')+'</div>'+resetCard()+'<p style="text-align:center">'+logo(70)+'</p><p class="mu">INNOVISTA Inventory Management. Created by Zeeshan Sarwar.</p>'}
 function admin0(){
  const c=S.cfg,names={sales:1,units:1,stock:1,recv:1,due:1,stockinfo:1};
  return '<button class="btn s" onclick="sub=null;draw()">Back</button><h2 style="margin-top:10px">Admin panel</h2>'+
- '<div class="card"><h2>App lock</h2><div class="tg"><span>Lock app with password</span><input type="checkbox" style="width:auto" '+(c.lock?'checked':'')+' onchange="S.cfg.lock=this.checked;save()"></div><label class="mu">Password</label><input id="npw" type="text" value="'+esc(c.pw)+'"><button class="btn w" onclick="if($(\'#npw\').value.length<4)return alert(\'Min 4 characters\');S.cfg.pw=$(\'#npw\').value;save();alert(\'Password saved\')">Save password</button></div>'+
+ '<div class="card"><h2>App lock</h2><div class="tg"><span>Lock app with password</span><input type="checkbox" style="width:auto" '+(c.lock?'checked':'')+' onchange="S.cfg.lock=this.checked;save()"></div><label class="mu">Password</label><input id="npw" type="password" placeholder="Enter new password" autocomplete="new-password"><button class="btn w" onclick="if($(\'#npw\').value.length<4)return alert(\'Min 4 characters\');setPw($(\'#npw\').value).then(function(){$(\'#npw\').value=\'\';alert(\'Password saved\')})">Save password</button></div>'+
  '<div class="card"><h2>Front page editor</h2><label class="mu">Shop name</label><input value="'+esc(c.shop)+'" oninput="S.cfg.shop=this.value;save()"><label class="mu">Subtitle</label><input value="'+esc(c.note)+'" oninput="S.cfg.note=this.value;save()">'+
  Object.keys(c.cards).map(k=>'<div class="tg"><input value="'+esc(c.cards[k])+'" oninput="S.cfg.cards.'+k+'=this.value;save()"><input type="checkbox" style="width:auto;margin-left:10px" '+(c.hide[k]?'':'checked')+' onchange="S.cfg.hide.'+k+'=!this.checked;save()"></div>').join('')+
  '<div class="tg"><span>Show stock info chart</span><input type="checkbox" style="width:auto" '+(c.hide.stockinfo?'':'checked')+' onchange="S.cfg.hide.stockinfo=!this.checked;save()"></div></div>'+
@@ -299,7 +301,7 @@ function admin1(){
 function fixCfg(){const c=S.cfg.cards;if(!c.value)c.value='Total stock value'}
 let lastKey='';
 {const d0=draw;draw=function(){fixCfg();const k=tab+'|'+sub,keep=k==lastKey,ys=keep?[...document.querySelectorAll('.sh')].map(e=>[e.scrollLeft,e.scrollTop]):[],wy=keep?scrollY:0;
- d0();lastKey=k;if(keep){document.querySelectorAll('.sh').forEach((e,i)=>{if(ys[i]){e.scrollLeft=ys[i][0];e.scrollTop=ys[i][1]}});scrollTo(0,wy)}saveUI()}}
+ d0();if(tab=='more'&&sub=='admin')accordify();lastKey=k;if(keep){document.querySelectorAll('.sh').forEach((e,i)=>{if(ys[i]){e.scrollLeft=ys[i][0];e.scrollTop=ys[i][1]}});scrollTo(0,wy)}saveUI()}}
 const secH=(t,k)=>'<div class="ttl"><span>'+t+'</span><button class="arr'+(S.cfg[k]?' c':'')+'" onclick="toggS(this,\''+k+'\')" aria-label="Show or hide table">▲</button></div>';
 function toggS(b,k){S.cfg[k]=!S.cfg[k];save();b.classList.toggle('c',!!S.cfg[k]);b.parentElement.nextElementSibling.classList.toggle('c',!!S.cfg[k])}
 function togg(b){S.cfg.fold=!S.cfg.fold;save();const f=document.querySelector('.fold');if(f)f.classList.toggle('c',!!S.cfg.fold);b.classList.toggle('c',!!S.cfg.fold)}
@@ -341,7 +343,7 @@ function restoreFile(el){const f=el.files[0];if(!f)return;const r=new FileReader
 function admin(){return admin1()+'<div class="card"><h2>Data safety, Excel and Google Sheets</h2><p class="mu">Storage: <b style="color:var(--tx)">'+(window.DBX?(DBX.ok===false?'SQLite (error, browser copy kept)':'SQLite database'):'browser storage')+'</b>. Every entry is saved automatically on this device and survives closing the app, a crash or a restart. Last saved: <b style="color:var(--tx)">'+(lastSave?lastSave.toLocaleTimeString():'no change in this session')+'</b></p>'+
  '<button class="btn w" onclick="exportXLSX()">Download full Excel workbook (.xlsx)</button><p class="mu">Sheets: Daily Summary, Daily Stock (sold and remaining per date), Daily Sales, Shopkeepers, Ledger, Payments, Products.</p>'+
  '<button class="btn s w" onclick="exportJSON()">Download backup file</button><br><br><label class="mu">Restore from a backup file</label><input type="file" accept=".json,application/json" onchange="restoreFile(this)">'+
- '<div class="tile" style="cursor:default"><div class="ic">📗</div><div><b>Google Sheets</b><span class="mu">Open Google Sheets, File, Import, Upload, and choose the Excel workbook. Live automatic sync is not possible from this hosted page; it needs a backend server.</span></div></div></div>'}
+ '<div class="tile" style="cursor:default"><div class="ic">📗</div><div><b>Google Sheets</b><span class="mu">Open Google Sheets, File, Import, Upload, and choose the Excel workbook. Live automatic sync is not possible from this hosted page; it needs a backend server.</span></div></div></div>'+(window.LIC&&LIC.card?LIC.card():'')}
 
 // ---------- ledger with edit ----------
 function custs(){
@@ -419,6 +421,23 @@ function custs(){
  '<div style="display:flex;gap:8px;margin-bottom:12px"><button class="btn w" onclick="recv(\''+sub+'\')">Receive payment</button><button class="btn s w" onclick="newBillFor(\''+sub+'\')">New bill</button></div>'+
  secH('Date-wise account','foldLedDate')+'<div class="fold'+(S.cfg.foldLedDate?' c':'')+'"><div>'+sheet(['Date','Bills','Sale','Received','Balance'],dw,['Total',nb,M(ta),M(tp),M(ta-tp)],['l','r','r','r','r'])+'</div></div>'+
  secH('All entries (tap Edit to change)','foldLedTx')+'<div class="fold'+(S.cfg.foldLedTx?' c':'')+'"><div>'+sheet(['Date','Details','Bill','Paid','Balance',''],tx,['Total','',M(ta),M(tp),M(ta-tp),''],['l','l','r','r','r','l'])+'</div></div>'}
-(window.DBX?DBX.boot().then(function(st){if(st&&(!S.savedAt||(st.savedAt||'')>=S.savedAt)){S=st;vd=S.cur;unlocked=!S.cfg.lock;fixCfg()}else DBX.queue(S)}).catch(function(e){console.error(e)}):Promise.resolve()).then(function(){draw()});
+
+// ---------- password hashing, admin re-check, accordion admin ----------
+const b64=a=>btoa(String.fromCharCode.apply(null,new Uint8Array(a)));
+const hasSub=()=>!!(window.crypto&&crypto.subtle);
+async function pwDerive(pw,salt){const k=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveBits']);return b64(await crypto.subtle.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:Uint8Array.from(atob(salt),c=>c.charCodeAt(0)),iterations:100000},k,256))}
+async function setPw(pw){if(!hasSub()){S.cfg.pw=pw;delete S.cfg.pwh;save();return}const salt=b64(crypto.getRandomValues(new Uint8Array(16)));S.cfg.pws=salt;S.cfg.pwh=await pwDerive(pw,salt);delete S.cfg.pw;save()}
+async function checkPw(pw){const c=S.cfg;if(c.pwh&&hasSub())return(await pwDerive(pw,c.pws))===c.pwh;if(c.pw!==undefined){const ok=pw===c.pw;if(ok&&hasSub())await setPw(pw);return ok}return false}
+function openAdmin(){if(!S.cfg.lock){sub='admin';draw();return}
+ form('Admin password',[['p','Enter the app password','password']],v=>{checkPw(v.p).then(ok=>{if(ok){sub='admin';draw()}else alert('Wrong password')});return true},'Open')}
+const ICON={'App lock':'🔐','Front page editor':'🎛️','Stock levels':'📉','Import products (CSV / Excel)':'📥','Reports and print':'🖨️','Data safety, Excel and Google Sheets':'💾','License':'🔑'};
+function accordify(){const open=S.cfg.adm||'';
+ document.querySelectorAll('#app>.card').forEach(c=>{const h=c.querySelector('h2');if(!h)return;const t=h.textContent;h.remove();
+  const body=document.createElement('div');body.className='accb';while(c.firstChild)body.appendChild(c.firstChild);
+  const hd=document.createElement('div');hd.className='acch';hd.innerHTML='<span class="ic">'+(ICON[t]||'⚙️')+'</span><b>'+t+'</b><span class="ch">›</span>';
+  c.className='card acc'+(t==open?' open':'');c.appendChild(hd);c.appendChild(body);
+  hd.onclick=()=>{const o=c.classList.contains('open');document.querySelectorAll('#app>.acc').forEach(x=>x.classList.remove('open'));if(!o)c.classList.add('open');S.cfg.adm=o?'':t;save()}});
+ const h=document.querySelector('#app>h2');if(h)h.insertAdjacentHTML('afterend','<div class="mu admsub">Tap a section to open it.</div>')}
+(window.LIC?LIC.ensure():new Promise(function(){document.getElementById('app').innerHTML='<div class="card"><h2>Licensing module missing</h2><p>Reinstall the app.</p></div>'})).then(function(){return window.DBX?DBX.boot().then(function(st){if(st&&(!S.savedAt||(st.savedAt||'')>=S.savedAt)){S=st;vd=S.cur;unlocked=!S.cfg.lock;fixCfg()}else DBX.queue(S)}).catch(function(e){console.error(e)}):null}).then(function(){draw()});
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(function(){});
 </script></body></html>

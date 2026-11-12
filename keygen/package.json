@@ -1,0 +1,19 @@
+{
+  "name": "innovista-keygen",
+  "version": "1.0.0",
+  "private": true,
+  "description": "INNOVISTA Key Generator (owner only)",
+  "scripts": {
+    "build": "node ../tools/protect.js www dist",
+    "android:add": "npx cap add android",
+    "android:sync": "npm run build && npx cap sync android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.2.0",
+    "@capacitor/cli": "^6.2.0",
+    "@capacitor/core": "^6.2.0"
+  },
+  "devDependencies": {
+    "javascript-obfuscator": "^4.1.0"
+  }
+}

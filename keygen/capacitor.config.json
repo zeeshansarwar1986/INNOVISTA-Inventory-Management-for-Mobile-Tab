@@ -1,0 +1,12 @@
+{
+  "appId": "com.innovista.keygen",
+  "appName": "INNOVISTA Key Generator",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": false,
+    "webContentsDebuggingEnabled": false
+  }
+}

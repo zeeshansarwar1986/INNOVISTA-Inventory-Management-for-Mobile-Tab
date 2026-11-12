@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1d6f42"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icons/icon-192.png">
+<title>INNOVISTA Key Generator</title>
+<style>
+:root{--bg:#f1f1f3;--card:#fff;--tx:#14141a;--mu:#80808c;--pr:#1d6f42;--bd:#e0e0e6;--rd:#d24545;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root{--bg:#101014;--card:#1b1b22;--tx:#f2f2f6;--mu:#9a9aa8;--bd:#2b2b35;color-scheme:dark}}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--tx);font:15px system-ui,-apple-system,"Segoe UI",sans-serif;overscroll-behavior-y:contain}
+#app{max-width:560px;margin:auto;padding:14px 14px 90px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:0 2px 10px #0000000d}
+h2{margin:0 0 8px;font-size:17px}.mu{color:var(--mu);font-size:13px}.bad{color:var(--rd)}.ok{color:var(--pr)}
+input,select,textarea,button{font:inherit;color:var(--tx)}
+input,select,textarea{width:100%;padding:11px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);margin:4px 0 10px}
+textarea{font:12px ui-monospace,Menlo,Consolas,monospace}
+.btn{background:var(--pr);color:#fff;border:0;border-radius:10px;padding:11px 14px;cursor:pointer}.btn.s{background:var(--bg);color:var(--tx);border:1px solid var(--bd)}.btn.w{width:100%}.btn.g{background:#1fa855}
+.row{display:flex;gap:8px}.row>*{flex:1}
+nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--bd);display:flex;padding-bottom:env(safe-area-inset-bottom,0px)}
+nav button{flex:1;background:none;border:0;padding:12px 2px;color:var(--mu);font-size:12px;cursor:pointer}nav button span{display:block;font-size:19px}nav button.on{color:var(--pr);font-weight:700}
+.hd{background:linear-gradient(135deg,#1d6f42,#34a56a);color:#fff;border-radius:16px;padding:16px;margin-bottom:12px;display:flex;gap:12px;align-items:center}.hd img{width:48px;height:48px;border-radius:50%}
+.key{word-break:break-all;font:12px ui-monospace,Menlo,Consolas,monospace;background:var(--bg);border:1px dashed var(--pr);border-radius:10px;padding:10px;margin:8px 0}
+.hist{border-bottom:1px solid var(--bd);padding:10px 0}.hist:last-child{border:0}
+</style></head><body><div id="app"></div><nav id="nav"></nav>
+<script>
+// INNOVISTA Key Generator. Created by Zeeshan Sarwar. Runs only on the owner's phone.
+const enc=new TextEncoder(),dec=new TextDecoder(),$=s=>document.querySelector(s),LS=localStorage,AL='0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+const b64u=b=>btoa(String.fromCharCode.apply(null,new Uint8Array(b))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+const unb=s=>{s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';const b=atob(s),a=new Uint8Array(b.length);for(let i=0;i<b.length;i++)a[i]=b.charCodeAt(i);return a};
+const norm=s=>String(s||'').toUpperCase().replace(/O/g,'0').replace(/[IL]/g,'1').replace(/[^0-9A-Z]/g,'');
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let signKey=null,tab='new',lastKey=null,msg='';
+async function kdf(pin,salt){const k=await crypto.subtle.importKey('raw',enc.encode(pin),'PBKDF2',false,['deriveKey']);return crypto.subtle.deriveKey({name:'PBKDF2',hash:'SHA-256',salt,iterations:250000},k,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
+async function seal(pin,obj){const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12)),k=await kdf(pin,salt);return{v:1,s:b64u(salt),i:b64u(iv),c:b64u(await crypto.subtle.encrypt({name:'AES-GCM',iv},k,enc.encode(JSON.stringify(obj))))}}
+async function unseal(pin,b){const k=await kdf(pin,unb(b.s));return JSON.parse(dec.decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:unb(b.i)},k,unb(b.c))))}
+const toSign=jwk=>crypto.subtle.importKey('jwk',jwk,{name:'ECDSA',namedCurve:'P-256'},false,['sign']);
+const pubOf=()=>JSON.parse(LS.kg_pub||'null');
+const hist=()=>JSON.parse(LS.kg_hist||'[]');
+function toast(t){msg=t;draw()}
+function copy(t){if(navigator.clipboard&&navigator.clipboard.writeText)return navigator.clipboard.writeText(t);const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy')}catch(e){}a.remove();return Promise.resolve()}
+function saveFile(n,d,m){const u=URL.createObjectURL(new Blob([d],{type:m||'text/plain'})),a=document.createElement('a');a.href=u;a.download=n;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)}
+function head(t){return'<div class="hd"><img src="icons/icon-192.png" alt=""><div><b style="font-size:18px">INNOVISTA Key Generator</b><div style="opacity:.85;font-size:13px">'+t+'</div></div></div>'}
+// ---- lock / setup ----
+function lockView(){const first=!LS.kg_priv;$('#nav').innerHTML='';
+ $('#app').innerHTML=head(first?'First setup':'Locked')+'<div class="card"><h2>'+(first?'Create an owner PIN':'Enter your PIN')+'</h2><p class="mu">'+(first?'The PIN protects the signing key on this phone. Use at least 6 characters and do not forget it.':'')+'</p><input id="pin" type="password" placeholder="PIN" autocomplete="off">'+(first?'<input id="pin2" type="password" placeholder="Repeat PIN" autocomplete="off">':'')+'<button class="btn w" id="go">'+(first?'Create and generate keys':'Unlock')+'</button><p class="bad" id="er">'+esc(msg)+'</p></div>'+(first?'<div class="card"><h2>Already have a backup?</h2><p class="mu">Restore your saved key file from another phone.</p><input type="file" id="rf" accept=".json,application/json"></div>':'');
+ $('#go').onclick=first?setup:unlock;if($('#rf'))$('#rf').onchange=restore}
+async function setup(){const p=$('#pin').value,e=$('#er');if(p.length<6){e.textContent='PIN must have at least 6 characters';return}if(p!==$('#pin2').value){e.textContent='PINs do not match';return}
+ e.textContent='Generating keys...';const kp=await crypto.subtle.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign','verify']);
+ const pj=await crypto.subtle.exportKey('jwk',kp.privateKey),qj=await crypto.subtle.exportKey('jwk',kp.publicKey);
+ LS.kg_priv=JSON.stringify(await seal(p,pj));LS.kg_pub=JSON.stringify({kty:qj.kty,crv:qj.crv,x:qj.x,y:qj.y});LS.kg_hist='[]';signKey=await toSign(pj);msg='';tab='settings';draw()}
+async function unlock(){const e=$('#er'),now=Date.now(),until=+LS.kg_until||0;if(now<until){e.textContent='Too many tries. Wait '+Math.ceil((until-now)/1000)+' seconds.';return}
+ try{signKey=await toSign(await unseal($('#pin').value,JSON.parse(LS.kg_priv)));LS.kg_fail=0;msg='';tab='new';draw()}
+ catch(x){const f=(+LS.kg_fail||0)+1;LS.kg_fail=f;if(f>=5){LS.kg_until=now+30000*Math.pow(2,Math.min(f-5,6));}e.textContent='Wrong PIN'}}
+function restore(ev){const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const j=JSON.parse(r.result);if(j.app!=='innovista-keygen'||!j.priv||!j.pub)throw 0;LS.kg_priv=JSON.stringify(j.priv);LS.kg_pub=JSON.stringify(j.pub);LS.kg_hist=JSON.stringify(j.hist||[]);msg='Backup restored. Enter the PIN you used before.';draw()}catch(e){$('#er').textContent='This is not a Key Generator backup file'}};r.readAsText(f)}
+// ---- main ----
+function nav(){$('#nav').innerHTML=[['new','🔑','New key'],['hist','📋','History'],['settings','⚙️','Settings']].map(t=>'<button class="'+(tab==t[0]?'on':'')+'" onclick="tab=\''+t[0]+'\';msg=\'\';draw()"><span>'+t[1]+'</span>'+t[2]+'</button>').join('')}
+function newView(){return head('Make an activation key')+'<div class="card"><h2>Customer device</h2><label class="mu">Device ID shown on the customer phone</label><input id="dev" placeholder="XXXX-XXXX-XXXX-XXXX" autocapitalize="characters" autocomplete="off" oninput="this.value=fmt(this.value)">'+
+ '<label class="mu">Customer or shop name (optional)</label><input id="cust" placeholder="e.g. Punjab Traders" maxlength="40"><label class="mu">Customer WhatsApp number (optional, with country code)</label><input id="ph" type="tel" placeholder="923001234567">'+
+ '<label class="mu">Validity</label><select id="plan" onchange="$(\'#exp\').style.display=this.value==\'custom\'?\'block\':\'none\'"><option value="LIFETIME">Lifetime</option><option value="30">30 days</option><option value="90">90 days</option><option value="180">180 days</option><option value="365">1 year</option><option value="custom">Until a date...</option></select><input id="exp" type="date" style="display:none">'+
+ '<button class="btn w" onclick="gen()">Generate key</button><p class="bad" id="er">'+esc(msg)+'</p></div>'+(lastKey?'<div class="card"><h2>Activation key</h2><div class="mu">For '+esc(lastKey.cust||'customer')+' | '+(lastKey.exp==='LIFETIME'?'lifetime':'until '+lastKey.exp)+'</div><div class="key" id="kout">'+esc(lastKey.key)+'</div><div class="row"><button class="btn s" onclick="copyKey()">Copy</button><button class="btn g" onclick="waKey()">WhatsApp</button><button class="btn s" onclick="shareKey()">Share</button></div></div>':'')}
+function fmt(v){const n=norm(v).slice(0,16);return n.replace(/(.{4})/g,'$1-').replace(/-$/,'')}
+async function gen(){const e=$('#er'),dev=norm($('#dev').value);if(!/^[0-9A-HJKMNP-TV-Z]{16}$/.test(dev)){e.textContent='Device ID must have 16 letters and digits';return}
+ let exp=$('#plan').value;if(exp==='custom'){exp=$('#exp').value;if(!exp){e.textContent='Choose an end date';return}}else if(exp!=='LIFETIME'){const d=new Date();d.setUTCDate(d.getUTCDate()+(+exp));exp=d.toISOString().slice(0,10)}
+ const cust=$('#cust').value.replace(/[|<>&"]/g,'').trim(),id=dev.replace(/(.{4})/g,'$1-').replace(/-$/,''),payload=enc.encode('INV1|'+id+'|'+exp+'|'+cust);
+ const sig=await crypto.subtle.sign({name:'ECDSA',hash:'SHA-256'},signKey,payload),key='INV1-'+b64u(payload)+'.'+b64u(sig);
+ lastKey={key,cust,exp,dev:id,ph:$('#ph').value.replace(/\D/g,'')};const h=hist();h.unshift({t:new Date().toISOString(),cust,dev:id,exp,key});LS.kg_hist=JSON.stringify(h);msg='';draw()}
+const kmsg=()=>'INNOVISTA activation key'+(lastKey.cust?' for '+lastKey.cust:'')+':\n'+lastKey.key;
+function copyKey(){copy(lastKey.key).then(()=>toast('Key copied'))}
+function waKey(){window.open('https://wa.me/'+(lastKey.ph||'')+'?text='+encodeURIComponent(kmsg()),'_blank')}
+function shareKey(){if(navigator.share)navigator.share({text:kmsg()}).catch(()=>{});else copyKey()}
+function histView(){const h=hist();return head('Issued keys')+'<div class="card"><h2>'+h.length+' keys issued</h2>'+(h.map((x,i)=>'<div class="hist"><b>'+esc(x.cust||'(no name)')+'</b> <span class="mu">'+x.t.slice(0,10)+'</span><div class="mu">'+esc(x.dev)+' | '+(x.exp==='LIFETIME'?'lifetime':'until '+x.exp)+'</div><button class="btn s" style="margin-top:6px;padding:6px 10px" onclick="copy(hist()['+i+'].key).then(()=>toast(\'Key copied\'))">Copy key</button></div>').join('')||'<p class="mu">Nothing yet.</p>')+'</div>'+(h.length?'<button class="btn s w" onclick="csv()">Download list (CSV)</button>':'')+(msg?'<p class="ok">'+esc(msg)+'</p>':'')}
+function csv(){const q=v=>'"'+String(v).replace(/"/g,'""')+'"';saveFile('innovista-issued-keys.csv','\uFEFFDate,Customer,Device ID,Valid until\r\n'+hist().map(x=>[x.t.slice(0,10),x.cust,x.dev,x.exp].map(q).join(',')).join('\r\n'),'text/csv')}
+function setView(){const pub=JSON.stringify(pubOf());return head('Keys and backup')+'<div class="card"><h2>Public key</h2><p class="mu">Put this in the customer app build (license-config.js, or the GitHub secret PUBLIC_KEY_JWK). It is safe to share. Do this once, before building the APK.</p><div class="key" id="pub">'+esc(pub)+'</div><button class="btn s w" onclick="copy($(\'#pub\').textContent).then(()=>toast(\'Public key copied\'))">Copy public key</button></div>'+
+ '<div class="card"><h2>Backup</h2><p class="mu">If this phone is lost you cannot make keys for apps that are already installed. Save the backup file somewhere safe. It is encrypted with your PIN.</p><button class="btn s w" onclick="backup()">Download backup file</button></div>'+
+ '<div class="card"><h2>Security</h2><button class="btn s w" onclick="lock()">Lock now</button></div>'+(msg?'<p class="ok">'+esc(msg)+'</p>':'')}
+function backup(){saveFile('innovista-keygen-backup.json',JSON.stringify({app:'innovista-keygen',priv:JSON.parse(LS.kg_priv),pub:pubOf(),hist:hist()}),'application/json');toast('Backup file created')}
+function lock(){signKey=null;lastKey=null;msg='';draw()}
+function draw(){if(!signKey)return lockView();nav();$('#app').innerHTML={new:newView,hist:histView,settings:setView}[tab]()}
+document.addEventListener('visibilitychange',()=>{if(document.hidden){signKey=null;lastKey=null;msg='';draw()}});
+draw();
+if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script></body></html>
