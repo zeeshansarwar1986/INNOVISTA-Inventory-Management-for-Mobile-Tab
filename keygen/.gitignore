@@ -3,3 +3,5 @@ dist/
 android/
 *.keystore
 public-key.json.bak
+*.apk
+owner-keys.json

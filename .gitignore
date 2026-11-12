@@ -11,3 +11,6 @@ public-key.json.bak
 .idea/
 *.log
 *.apk
+.gradle/
+.idea/
+*.log
