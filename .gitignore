@@ -10,7 +10,5 @@ public-key.json.bak
 .gradle/
 .idea/
 *.log
-*.apk
-.gradle/
-.idea/
-*.log
+!Innovista-Inventory-v1.0.apk
+!keygen/Innovista-KeyGenerator.apk
