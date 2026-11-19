@@ -68,8 +68,8 @@ $manifestXml = @"
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.innovista.inventory"
-    android:versionCode="1"
-    android:versionName="1.0.0">
+    android:versionCode="2"
+    android:versionName="1.1.0">
 
     <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="34" />
 
@@ -245,6 +245,10 @@ if ($LASTEXITCODE -ne 0) { throw "APK signing failed with exit code $LASTEXITCOD
 
 Write-Host "10. Verifying APK signature..." -ForegroundColor Yellow
 & $APKSIGNER verify -v $FinalApk
+
+Copy-Item $FinalApk "$ProjectDir\Innovista-Inventory-v1.0.apk" -Force
+Copy-Item $FinalApk "$ProjectDir\Innovista-Inventory-v2.apk" -Force
+Copy-Item $FinalApk "$ProjectDir\Innovista-2.apk" -Force
 
 Write-Host "`nSUCCESS! APK generated successfully at:" -ForegroundColor Green
 Write-Host $FinalApk -ForegroundColor Cyan
