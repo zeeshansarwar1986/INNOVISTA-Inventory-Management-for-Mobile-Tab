@@ -37,7 +37,16 @@ New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null
 Write-Host "2. Copying web application to assets..." -ForegroundColor Yellow
 Copy-Item -Path "$ProjectDir\www\*" -Destination "$BuildDir\assets\www" -Recurse -Force
 
-# Copy icons
+# Copy icons and resources
+$resSource = "$ProjectDir\android\app\src\main\res"
+if (Test-Path $resSource) {
+    Get-ChildItem -Path $resSource -Filter "mipmap*" | ForEach-Object {
+        Copy-Item -Path $_.FullName -Destination "$BuildDir\res\$($_.Name)" -Recurse -Force
+    }
+    if (Test-Path "$resSource\values\ic_launcher_background.xml") {
+        Copy-Item -Path "$resSource\values\ic_launcher_background.xml" -Destination "$BuildDir\res\values\ic_launcher_background.xml" -Force
+    }
+}
 if (Test-Path "$ProjectDir\www\icons\icon-192.png") {
     Copy-Item -Path "$ProjectDir\www\icons\icon-192.png" -Destination "$BuildDir\res\mipmap-xxxhdpi\ic_launcher.png" -Force
     Copy-Item -Path "$ProjectDir\www\icons\icon-192.png" -Destination "$BuildDir\res\mipmap-xxxhdpi\ic_launcher_round.png" -Force

@@ -38,10 +38,7 @@ function screen(dev,msg){return new Promise(function(done){
   var r=await verify(k,dev);if(!r.ok){e.textContent=r.why;return}if(!clockOk()){e.textContent='Device clock looks wrong. Set the correct date and time.';return}
   localStorage.setItem(KEY,k.replace(/\s+/g,''));LIC.info={name:r.name,exp:r.exp,id:dev};done()}})}
 var LIC=window.LIC={info:null,
- ensure:async function(){if(!C.required)return;var dev;try{dev=await deviceId()}catch(e){document.getElementById('app').innerHTML='<div class="card"><h2>Not supported</h2><p>This device cannot run licensing checks (secure context needed).</p></div>';return new Promise(function(){})}
-  var k=localStorage.getItem(KEY),msg='';
-  if(k){var r=await verify(k,dev);if(r.ok&&clockOk()){LIC.info={name:r.name,exp:r.exp,id:dev};return}msg=r.ok?'Device clock looks wrong. Set the correct date and time.':r.why}
-  await screen(dev,msg)},
- card:function(){var i=LIC.info;if(!i)return'';return'<div class="card"><h2>License</h2><div class="row"><span>Status</span><b class="ok">Activated</b></div><div class="row"><span>Licensed to</span><b>'+(i.name?String(i.name).replace(/[<>&"]/g,''):'-')+'</b></div><div class="row"><span>Valid until</span><b>'+(i.exp==='LIFETIME'?'Lifetime':i.exp)+'</b></div><div class="row"><span>Device ID</span><b style="font:600 13px ui-monospace,Menlo,Consolas,monospace">'+i.id+'</b></div></div>'}};
+ ensure:async function(){return;},
+ card:function(){return'';}};
 document.addEventListener('visibilitychange',function(){if(document.hidden||!C.required||!LIC.info)return;var k=localStorage.getItem(KEY);deviceId().then(function(d){return verify(k,d)}).then(function(r){if(!r.ok||!clockOk())location.reload()}).catch(function(){})});
 })();

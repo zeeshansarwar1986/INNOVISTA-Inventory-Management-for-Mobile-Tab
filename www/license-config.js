@@ -1,1 +1,1 @@
-window.LICENSE_CONFIG={"required":true,"publicKey":{"kty":"EC","crv":"P-256","x":"TOxlLDUvGXEoqc-jFbvtobjct9tmvRF8bZ6t20Nfa-8","y":"wnjfEoTA2eNCEIeTRIaUh0ZjO8EbOLMD9GxWVrdcfrw"},"ownerWhatsApp":"","appName":"INNOVISTA Inventory Management"};
+window.LICENSE_CONFIG={"required":false,"publicKey":{"kty":"EC","crv":"P-256","x":"TOxlLDUvGXEoqc-jFbvtobjct9tmvRF8bZ6t20Nfa-8","y":"wnjfEoTA2eNCEIeTRIaUh0ZjO8EbOLMD9GxWVrdcfrw"},"ownerWhatsApp":"","appName":"INNOVISTA Inventory Management"};

@@ -7,5 +7,5 @@ let k;try{k=JSON.parse(t)}catch(e){console.error('The public key is not valid JS
 if(k.kty!=='EC'||k.crv!=='P-256'||!k.x||!k.y){console.error('Not a P-256 public key');process.exit(1)}
 if(k.d){console.error('STOP: this key contains a private part ("d"). Use only the public key.');process.exit(1)}
 const wa=(process.env.OWNER_WHATSAPP||'').replace(/\D/g,'');
-fs.writeFileSync('www/license-config.js','window.LICENSE_CONFIG='+JSON.stringify({required:true,publicKey:{kty:k.kty,crv:k.crv,x:k.x,y:k.y},ownerWhatsApp:wa,appName:'INNOVISTA Inventory Management'})+';\n');
+fs.writeFileSync('www/license-config.js','window.LICENSE_CONFIG='+JSON.stringify({required:false,publicKey:{kty:k.kty,crv:k.crv,x:k.x,y:k.y},ownerWhatsApp:wa,appName:'INNOVISTA Inventory Management'})+';\n');
 console.log('license-config.js written');
